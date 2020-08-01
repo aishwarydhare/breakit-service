@@ -1,0 +1,13 @@
+FROM breakit_base as breakit_master
+WORKDIR /home/ubuntu
+RUN pip install --upgrade pip
+COPY requirements requirements
+RUN pip3 install -r requirements/development.txt
+
+FROM breakit_master
+COPY project project
+WORKDIR /home/ubuntu/project
+EXPOSE 8001
+EXPOSE 8002
+EXPOSE 8003
+CMD python3 manage.py runserver 0.0.0.0:8002

@@ -1,0 +1,19 @@
+.idea/
+secrets.json
+project/static/*
+*.pyc
+.DS_Store
+*.log
+*.log.*
+db.sqlite3
+project/tracker_update_log.txt
+project/datum_debug.txt
+venv/*
+venv*
+dump.rdb
+docker/postgresql/data/*
+docker/postgresql/logs/*
+
+# exceptions
+!docker/postgresql/data/.gitkeep
+!docker/postgresql/logs/.gitkeep

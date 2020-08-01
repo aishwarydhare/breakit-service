@@ -1,0 +1,37 @@
+version: "3.7"
+services:
+  psql:
+    build:
+      context: postgresql
+      dockerfile: Dockerfile
+    container_name: "psql"
+    restart: always
+    ports:
+      - 5433:5433
+    volumes:
+      - postgres_data:/var/lib/postgresql/11/
+      - postgres_logs:/var/log/postgresql/
+    networks:
+      - drf
+  drf:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.base
+    restart: always
+    container_name: "drf"
+    ports:
+      - 8001:8001
+      - 8002:8002
+      - 8003:8003
+    volumes:
+      - ../project/:/home/ubuntu/project
+    depends_on:
+      - "psql"
+    networks:
+      - drf
+networks:
+  drf:
+    driver: bridge
+volumes:
+  postgres_data:
+  postgres_logs:
