@@ -37,6 +37,7 @@ class Order(TimeStampMixin, AddressMixin):
     full_address = models.TextField(null=False, blank=False)
     address_landmark = models.TextField(null=False, blank=False)
     mealset = models.ForeignKey('mealset.MealSet', on_delete=models.PROTECT, null=False, blank=False)
+    eta = models.CharField(max_length=20, null=False, blank=False)
 
     @property
     def delivery_date(self):
@@ -88,5 +89,6 @@ class Order(TimeStampMixin, AddressMixin):
             "address_lat": self.lat,
             "address_lon": self.lon,
             "customer_mobile": self.customer.user.mobile,
-            "mealset": self.mealset.in_dict()
+            "mealset": self.mealset.in_dict(),
+            "eta": self.eta
         }

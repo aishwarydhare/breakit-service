@@ -68,6 +68,7 @@ class FoodItem(TimeStampMixin):
     image = models.CharField(max_length=250, null=False, blank=False, help_text="image url from internet")
     amount = models.IntegerField(null=False, blank=False)
     recommended_addons = models.ManyToManyField('restaurants.AddOn')
+    is_veg = models.BooleanField(null=False)
 
     class Meta:
         app_label = "restaurants"
@@ -90,6 +91,7 @@ class FoodItem(TimeStampMixin):
             "amount": self.amount,
             "recommended_addons": recommended_addons,
             "image": self.image,
+            "is_veg": self.image
         }
 
     def clean(self):
