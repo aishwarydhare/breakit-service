@@ -1,3 +1,18 @@
+FROM ubuntu:18.04 as breakit_base
+RUN apt-get update --fix-missing
+# utils only
+RUN apt-get install openssl libssl1.0 build-essential tmux git lynx lsof nano htop curl -y
+# python 3.7
+RUN apt-get install python3.7 python3-dev python-pip python3-pip python-dev python3.7-dev python-setuptools -y
+RUN python3 --version
+# project dependencies
+RUN apt-get install libpq-dev libpango1.0-0 libcairo2 gdal-bin -y
+# install tzdata
+RUN export DEBIAN_FRONTEND=noninteractive && apt-get install tzdata -y
+RUN ln -fs /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
+RUN dpkg-reconfigure --frontend noninteractive tzdata
+RUN mkdir /home/ubuntu
+
 FROM breakit_base as breakit_master
 WORKDIR /home/ubuntu
 RUN pip install --upgrade pip
@@ -7,7 +22,5 @@ RUN pip3 install -r requirements/development.txt
 FROM breakit_master
 COPY project project
 WORKDIR /home/ubuntu/project
-EXPOSE 8001
-EXPOSE 8002
-EXPOSE 8003
-CMD python3 manage.py runserver 0.0.0.0:8002
+EXPOSE 8000
+CMD python3 manage.py runserver 0.0.0.0:8000

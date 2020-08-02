@@ -4,6 +4,7 @@ services:
     build:
       context: postgresql
       dockerfile: Dockerfile
+      network: host
     container_name: "psql"
     restart: always
     ports:
@@ -11,24 +12,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/11/
       - postgres_logs:/var/log/postgresql/
-    networks:
-      - drf
   drf:
     build:
       context: ../
-      dockerfile: docker/Dockerfile.base
+      dockerfile: docker/Dockerfile.drf
+      network: host
     restart: always
     container_name: "drf"
     ports:
-      - 8001:8001
-      - 8002:8002
-      - 8003:8003
+      - 8000:8000
     volumes:
       - ../project/:/home/ubuntu/project
     depends_on:
       - "psql"
-    networks:
-      - drf
 networks:
   drf:
     driver: bridge
