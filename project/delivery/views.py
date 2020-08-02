@@ -4,6 +4,9 @@ from rest_framework.response import Response
 
 from authentication.auth_decorator import authenticate
 from delivery.models import DeliveryExecutive
+from miscellaneous import route_engine_helper
+from miscellaneous.date_time_utils import display_time
+from miscellaneous.fcm_service import sendFcmMessage
 from miscellaneous.logging_utils import show_error
 from orders.choices import OrderStatusChoices
 from orders.models import Order, active_order_statuses
@@ -59,6 +62,22 @@ def pickup_delivery(request):
         order = Order.objects.get(id=order_id, delivery_executive=delivery_executive)
         order.status = OrderStatusChoices.OUT_FOR_DELIVERY
         order.save()
+
+        order.eta = calculate_eta(delivery_executive.lat, delivery_executive.lon, order.lat, order.lon)
+        order.save()
+
+        fcm_token = order.customer.user.fcm_token
+        if fcm_token != "":
+            sendFcmMessage(
+                fcm_token,
+                "Your order has been picked up",
+                "It should reach you in about " + order.eta,
+                {
+                    "title": "Your order has been picked up",
+                    "message": "It should reach you in about " + order.eta,
+                    "order_id": order.id
+                }
+            )
         return Response({
             "ok": True
         }, status=status.HTTP_200_OK)
@@ -82,6 +101,19 @@ def complete_delivery(request):
         order.save()
         delivery_executive.orders_fulfilled = delivery_executive.orders_fulfilled + 1
         delivery_executive.save()
+
+        fcm_token = order.customer.user.fcm_token
+        if fcm_token != "":
+            sendFcmMessage(
+                fcm_token,
+                "Order Delivered",
+                "We are grateful to serve you, thanks.",
+                {
+                    "title": "Order Delivered",
+                    "message": "We are grateful to serve you, thanks.",
+                    "mealset_id": order.id
+                }
+            )
         return Response({
             "ok": True
         }, status=status.HTTP_200_OK)
@@ -131,6 +163,12 @@ def update_location(request):
     delivery_executive.lat = lat
     delivery_executive.lon = lon
     delivery_executive.save()
+
+    active_orders_for_executive = Order.objects.filter(delivery_executive=delivery_executive,
+                                                       status__in=active_order_statuses)
+    for order in active_orders_for_executive:
+        order.eta = calculate_eta(lat, lon, order.lat, order.lon)
+        order.save()
     try:
         return Response({
             "ok": True
@@ -142,3 +180,12 @@ def update_location(request):
     except Exception as e:
         show_error(e)
         return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def calculate_eta(src_lat, src_lon, dest_lat, dest_lon) -> str:
+    try:
+        eta_response = route_engine_helper.get_eta(src_lat, src_lon, dest_lat, dest_lon)
+        eta_time = display_time(eta_response.duration_val)
+        return eta_time
+    except:
+        return "--"

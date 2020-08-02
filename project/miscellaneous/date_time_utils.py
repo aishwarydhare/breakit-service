@@ -33,13 +33,8 @@ def __eta_time_to_slot_mapper(hour_digit):
 def display_eta(actual_eta_seconds):
     import datetime
     from datetime import timedelta
-    buffer_eta = 7200  # 2hours
+    buffer_eta = 1200  # 20 minutes
     eta_show = actual_eta_seconds + buffer_eta
     current_datetime = datetime.datetime.now()
-    current_date = current_datetime.date()
     eta = current_datetime + timedelta(seconds=eta_show)
-    eta_date = eta.date()
-    eta_time_hour = int(eta.time().hour)
-    if eta_date > current_date:
-        pass
-    return __eta_time_to_slot_mapper(eta_time_hour)
+    return eta
